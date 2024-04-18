@@ -1,0 +1,25 @@
+image: node:18
+
+pipelines:
+  default:
+    - step:
+        name: Run Automation Test
+        caches:
+          - node
+        script:
+          - echo "Installing Dependencies .."
+          - npm cache clean -f
+          - rm -rf node_modules
+          - rm package-lock.json
+          - npm install -g npm@latest
+          - npm install  # Install dependencies
+          - echo "Install Java .."
+          - apt-get update && apt-get install -y default-jre # Install Java
+          - export JAVA_HOME=/usr/lib/jvm/default-java
+          - export PATH=$JAVA_HOME/bin:$PATH
+          - java -version
+          - apt-get install xvfb
+          - Xvfb :99 -screen 0 1024x768x24 &
+          - echo "Regression Testing .."
+          - export DISPLAY=:99
+          - xvfb-run --server-args="-screen 0 1024x768x24" npm run test:regression --verbose # Run Regression Test
